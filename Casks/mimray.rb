@@ -1,6 +1,6 @@
 cask "mimray" do
-  version "0.5.3"
-  sha256 "69016274e177246df097cfa94fdb0e963acbc6ebd0f317a5bb8daa8f03ce100e"
+  version "0.5.4"
+  sha256 "723bea608595fa547d66716360aff9e758b2cf22f52b42da491ef925644d14fb"
 
   url "https://github.com/mimzeslami/mimray/releases/download/v#{version}/mimray-#{version}-macos.dmg"
   name "mimray"
