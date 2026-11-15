@@ -1,0 +1,24 @@
+name: bump
+# Daily: if mimray has a newer release, update the cask's version + sha256
+# (taken from the release's SHA256SUMS) and commit it.
+on:
+  schedule: [{ cron: '17 */6 * * *' }]
+  workflow_dispatch:
+permissions: { contents: write }
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          set -eu
+          V=$(gh release view --repo mimzeslami/mimray --json tagName --jq .tagName | sed 's/^v//')
+          CUR=$(sed -n 's/^  version "\(.*\)"/\1/p' Casks/mimray.rb)
+          [ "$V" = "$CUR" ] && { echo "up to date ($V)"; exit 0; }
+          SHA=$(curl -fsSL "https://github.com/mimzeslami/mimray/releases/download/v$V/SHA256SUMS" | awk -v f="mimray-$V-macos.dmg" '$2==f {print $1}')
+          echo "$SHA" | grep -Eq '^[0-9a-f]{64}$' || { echo "no hash for $V"; exit 1; }
+          sed -i "s/^  version \".*\"/  version \"$V\"/; s/^  sha256 \".*\"/  sha256 \"$SHA\"/" Casks/mimray.rb
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "mimray $V" && git push
